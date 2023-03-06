@@ -5,14 +5,13 @@
 package net.wizard.superwizard;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.ScreenUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,11 +20,7 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -52,10 +47,15 @@ public class ScoresScreen extends ScreenAdapter {
     Document documento = null;
     
     int difficulty;
+    
+    boolean sound;
+    
+    Sound clickSound;
 
-    public ScoresScreen(final Juego game, int difficulty) {
+    public ScoresScreen(final Juego game, int difficulty, boolean sound) {
         this.game = game;
         this.difficulty = difficulty;
+        this.sound = sound;
 
         camera = new OrthographicCamera(800, 480);
         camera.position.set(800 / 2, 480 / 2, 0);
@@ -65,6 +65,8 @@ public class ScoresScreen extends ScreenAdapter {
         back = new Texture(Gdx.files.internal("back.png"));
         
         goback = new Rectangle(25, 75 - 110 / 2, 100, 20);
+        
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
         
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -93,9 +95,10 @@ public class ScoresScreen extends ScreenAdapter {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             if (goback.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new MainScreen(game, difficulty));
-                    return;
+                if(sound)
+                    clickSound.play();
+                game.setScreen(new MainScreen(game, difficulty, sound));
+                return;
             }
         }
     }
@@ -187,7 +190,6 @@ public class ScoresScreen extends ScreenAdapter {
             Resultado resultado = new Resultado();
             Node resultado2 = resultados2.item(j);
             Element elemento = (Element) resultado2;
-            //resultado.setId(Integer.parseInt(elemento.getElementsByTagName("id").item(0).getChildNodes().item(0).getNodeValue()));
             resultado.setResultado(Integer.parseInt(elemento.getElementsByTagName("resultado").item(0).getChildNodes().item(0).getNodeValue()));
 
             this.results.add(resultado);

@@ -2,6 +2,7 @@ package net.wizard.superwizard;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -18,16 +19,23 @@ public class MainScreen extends ScreenAdapter {
     Rectangle play, scores, settings;
     
     int difficulty;
+    
+    boolean sound;
+    
+    Sound clickSound;
 
-    public MainScreen(final Juego game, int difficulty) {
+    public MainScreen(final Juego game, int difficulty, boolean sound) {
         this.game = game;
         this.difficulty = difficulty;
+        this.sound = sound;
 
         camera = new OrthographicCamera(800, 480);
         camera.position.set(800 / 2, 480 / 2, 0);
         touchPoint = new Vector3();
         fondo = new Texture(Gdx.files.internal("background.png"));
         menu = new Texture(Gdx.files.internal("menu.png"));
+        
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
         
         play = new Rectangle(345, 278 - 110 / 2, 110, 20);
         scores = new Rectangle(263, 246 - 110 / 2, 270, 17);
@@ -39,18 +47,21 @@ public class MainScreen extends ScreenAdapter {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             if (play.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new GameScreen(game, 3, 3, 0, false, difficulty));
+                    if(sound)
+                        clickSound.play();
+                    game.setScreen(new GameScreen(game, 3, 3, 0, false, difficulty, sound));
                     return;
             }
             if (scores.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new ScoresScreen(game, difficulty));
+                    if(sound)
+                        clickSound.play();
+                    game.setScreen(new ScoresScreen(game, difficulty, sound));
                     return;
             }
             if (settings.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new SettingsScreen(game));
+                    if(sound)
+                        clickSound.play();
+                    game.setScreen(new SettingsScreen(game, sound));
                     return;
             }
         }
@@ -70,9 +81,7 @@ public class MainScreen extends ScreenAdapter {
         
         game.batch.enableBlending();
         game.batch.begin();
-        //game.batch.draw(Assets.logo, 160 - 274 / 2, 480 - 10 - 142, 274, 142);
         game.batch.draw(menu, 250, 200 - 110 / 2, 300, 110);
-        //game.batch.draw(Settings.soundEnabled ? Assets.soundOn : Assets.soundOff, 0, 0, 64, 64);
         game.batch.end();
     }
 

@@ -1,12 +1,15 @@
 package net.wizard.superwizard;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.maps.tiled.*;
 import com.badlogic.gdx.maps.tiled.renderers.*;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.*;
 import java.util.ArrayList;
+import javax.swing.JOptionPane;
 
 public class GameScreen extends ScreenAdapter {
     static final int GAME_RUNNING = 0;
@@ -31,18 +34,22 @@ public class GameScreen extends ScreenAdapter {
     int score = 0, numMushrooms = 0, numBirds = 0, numCoins = 0, numEnemies = 0, numAleatorio = 0, lives = 0, numFires = 0, difficulty;
     float time = 0, timeInmortal = 7;
     final float TIMETOSHOOT = 3f;
-    boolean level1 = false, win = false, inmortal = false;
+    boolean level1 = false, win = false, inmortal = false, sound;
     
-    Texture Tpause, TmenuPause, fondo;
+    Texture Tpause, TmenuPause, fondo, Tsound;
     Vector3 touchPoint;
     
-    public GameScreen(Juego game, int lives, int numFires, int score, boolean level1, int difficulty) {
+    Sound clickSound, coinSound, hitSound;
+    Music music;
+    
+    public GameScreen(Juego game, int lives, int numFires, int score, boolean level1, int difficulty, boolean sound) {
         this.game = game;
         this.lives = lives;
         this.numFires = numFires;
         this.score = score;
         this.level1 = level1;
         this.difficulty = difficulty;
+        this.sound = sound;
         
         if(this.difficulty == 1) {
             numEnemies = 2;
@@ -66,8 +73,15 @@ public class GameScreen extends ScreenAdapter {
         Tpause = new Texture(Gdx.files.internal("pause.png"));
         TmenuPause = new Texture(Gdx.files.internal("menuPause.png"));
         fondo = new Texture(Gdx.files.internal("background.png"));
+        Tsound = new Texture(Gdx.files.internal("sound.png"));
         
         touchPoint = new Vector3();
+        
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
+        coinSound = Gdx.audio.newSound(Gdx.files.internal("coin.wav"));
+        hitSound = Gdx.audio.newSound(Gdx.files.internal("hit.wav"));
+        music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+        music.setLooping(true);
     }
 
     public void show() {
@@ -83,7 +97,7 @@ public class GameScreen extends ScreenAdapter {
         stage = new Stage();
         stage.getViewport().setCamera(camera);
 
-        wizard = new Wizard();
+        wizard = new Wizard(sound);
         wizard.layer = (TiledMapTileLayer) map.getLayers().get("walls");
         wizard.setPosition(10, 10);
         stage.addActor(wizard);
@@ -141,22 +155,29 @@ public class GameScreen extends ScreenAdapter {
     }
     
     public void update( float delta) {
+        if(sound)
+            music.play();
+        else
+            music.pause();
         if(wizard.getY() < 0 && wizard.getY() > -20) {
             lives--;
             
-            if(lives < 0) 
-                game.setScreen(new EndScreen(game, win, score, difficulty));
-            else 
+            if(lives < 0) {
+                music.dispose();
+                game.setScreen(new EndScreen(game, win, score, difficulty, sound));
+            } else 
                 wizard.setPosition(10, 10);
         }
         
         if(wizard.getX() >= 203 && wizard.getX() <= 204) {
             if(!level1) {
                 level1 = true;
-                game.setScreen(new GameScreen(game, lives, numFires, score, level1, difficulty));
+                game.setScreen(new GameScreen(game, lives, numFires, score, level1, difficulty, sound));
+                JOptionPane.showMessageDialog(null, "NIVEL 1 COMPLETADO!\nA POR EL NIVEL 2!");
             } else {
+                music.dispose();
                 win = true;
-                game.setScreen(new EndScreen(game, win, score, difficulty));
+                game.setScreen(new EndScreen(game, win, score, difficulty, sound));
             }
         }
         
@@ -202,13 +223,16 @@ public class GameScreen extends ScreenAdapter {
             if(wizard.rectangulo().overlaps(enemy.rectangulo()) && !enemy.fireOverlaps && !inmortal) {
                 lives--;
                 
-                if(lives < 0) 
-                    game.setScreen(new EndScreen(game, win, score, difficulty));
-                else 
+                if(lives < 0) {
+                    music.dispose();
+                    game.setScreen(new EndScreen(game, win, score, difficulty, sound));
+                } else 
                     wizard.setPosition(10, 10);
             }
             if(fire != null) {
                 if(fire.rectangulo().overlaps(enemy.rectangulo()) && !fire.enemyOverlaps) {
+                    if(sound)
+                        hitSound.play();
                     enemy.fireOverlaps = true;
                     fire.enemyOverlaps = true;
                     fire.remove();
@@ -219,6 +243,8 @@ public class GameScreen extends ScreenAdapter {
         
         for(Coin coin : coins) {
             if(wizard.rectangulo().overlaps(coin.rectangulo()) && !coin.wizardOverlaps) {
+                if(sound)
+                    coinSound.play();
                 score += 10;
                 coin.wizardOverlaps = true;
                 coin.remove();
@@ -229,13 +255,16 @@ public class GameScreen extends ScreenAdapter {
             if(wizard.rectangulo().overlaps(bird.rectangulo()) && !bird.fireOverlaps && !inmortal) {
                 lives--;
                 
-                if(lives < 0) 
-                    game.setScreen(new EndScreen(game, win, score, difficulty));
-                else 
+                if(lives < 0) {
+                    music.dispose();
+                    game.setScreen(new EndScreen(game, win, score, difficulty, sound));
+                } else 
                     wizard.setPosition(10, 10);
             }
             if(fire != null) {
                 if(fire.rectangulo().overlaps(bird.rectangulo()) && !fire.enemyOverlaps) {
+                    if(sound)
+                        hitSound.play();
                     bird.fireOverlaps = true;
                     fire.enemyOverlaps = true;
                     fire.remove();
@@ -248,13 +277,16 @@ public class GameScreen extends ScreenAdapter {
             if(wizard.rectangulo().overlaps(mushroom.rectangulo()) && !mushroom.fireOverlaps && !inmortal) {
                 lives--;
                 
-                if(lives < 0) 
-                    game.setScreen(new EndScreen(game, win, score, difficulty));
-                else 
+                if(lives < 0) {
+                    music.dispose();
+                    game.setScreen(new EndScreen(game, win, score, difficulty, sound));
+                } else 
                     wizard.setPosition(10, 10);
             }
             if(fire != null) {
                 if(fire.rectangulo().overlaps(mushroom.rectangulo()) && !fire.enemyOverlaps) {
+                    if(sound)
+                        hitSound.play();
                     mushroom.fireOverlaps = true;
                     fire.enemyOverlaps = true;
                     fire.remove();
@@ -264,9 +296,10 @@ public class GameScreen extends ScreenAdapter {
         }
         
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
-            //Assets.playSound(Assets.clickSound);
-
+            if(sound)
+                clickSound.play();
             state = GAME_PAUSED;
+            music.pause();
             return;
         }
         
@@ -346,22 +379,51 @@ public class GameScreen extends ScreenAdapter {
         
         game.batch.enableBlending();
         game.batch.begin();
-        //game.batch.draw(Assets.logo, 160 - 274 / 2, 480 - 10 - 142, 274, 142);
-        game.batch.draw(TmenuPause, 250, 200 - 110 / 2, 300, 110);
-        //game.batch.draw(Settings.soundEnabled ? Assets.soundOn : Assets.soundOff, 0, 0, 64, 64);
+        game.batch.draw(TmenuPause, 278, 225 - 110 / 2, 250, 100);
+        game.batch.draw(Tsound, 250, 350 - 110 / 2, 300, 110);
         game.batch.end();
             
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-                    //Assets.playSound(Assets.clickSound);
-                    state = GAME_RUNNING;
-                    return;
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            if(sound) {
+                clickSound.play();
+                music.play();
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new MainScreen(game, difficulty));
-                    return;
+            state = GAME_RUNNING;
+            return;
+        }
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            if(sound)
+                clickSound.play();
+            game.setScreen(new MainScreen(game, difficulty, sound));
+            return;
+        }
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F2)) {
+            if(sound) {
+                clickSound.play();
+                sound = false;
+                wizard.setSound(false);
+                JOptionPane.showMessageDialog(null, "Se ha desactivado el sonido");
+            } else {
+                JOptionPane.showMessageDialog(null, "El sonido ya está desactivado");
             }
-        //}
+
+            return;
+        }
+        
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F3)) {
+            if(!sound) {
+                sound = true;
+                wizard.setSound(true);
+                JOptionPane.showMessageDialog(null, "Se ha activado el sonido");
+            } else {
+                clickSound.play();
+                JOptionPane.showMessageDialog(null, "El sonido ya está activado");
+            }
+
+            return;
+        }
     }
 
     public void resize(int width, int height) {

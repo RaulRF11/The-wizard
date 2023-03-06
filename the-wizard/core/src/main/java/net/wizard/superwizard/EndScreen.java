@@ -6,6 +6,7 @@ package net.wizard.superwizard;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
@@ -46,12 +47,15 @@ public class EndScreen implements Screen {
     escribirXML escribir = new escribirXML();
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     Document documento = null;
+    boolean sound;
+    Sound clickSound;
 
-    public EndScreen(final Juego game, boolean win, int score, int difficulty) {
+    public EndScreen(final Juego game, boolean win, int score, int difficulty, boolean sound) {
         this.game = game;
         this.win = win;
         this.score = score;
         this.difficulty = difficulty;
+        this.sound = sound;
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
@@ -62,6 +66,8 @@ public class EndScreen implements Screen {
         
         playAgain = new Rectangle(257, 270 - 110 / 2, 285, 30);
         backToMenu = new Rectangle(257, 205 - 110 / 2, 285, 34);
+        
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
         
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -95,14 +101,16 @@ public class EndScreen implements Screen {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             if (playAgain.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new GameScreen(game, 3, 3, 0, false, difficulty));
-                    return;
+                if(sound)
+                    clickSound.play();
+                game.setScreen(new GameScreen(game, 3, 3, 0, false, difficulty, sound));
+                return;
             }
             if (backToMenu.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new MainScreen(game, difficulty));
-                    return;
+                if(sound)
+                    clickSound.play();
+                game.setScreen(new MainScreen(game, difficulty, sound));
+                return;
             }
         }
     }
@@ -145,7 +153,7 @@ public class EndScreen implements Screen {
             Resultado resultado = new Resultado();
             Node resultado2 = resultados2.item(j);
             Element elemento = (Element) resultado2;
-            //resultado.setId(Integer.parseInt(elemento.getElementsByTagName("id").item(0).getChildNodes().item(0).getNodeValue()));
+            
             resultado.setResultado(Integer.parseInt(elemento.getElementsByTagName("resultado").item(0).getChildNodes().item(0).getNodeValue()));
 
             this.results.add(resultado);

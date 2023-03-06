@@ -20,7 +20,7 @@ public class Juego extends Game {
     public void create() {
             batch = new SpriteBatch();
             font = new BitmapFont(); // use libGDX's default Arial font
-            this.setScreen(new MainScreen(this, difficulty));
+            this.setScreen(new MainScreen(this, difficulty, true));
     }
 
     public void render() {

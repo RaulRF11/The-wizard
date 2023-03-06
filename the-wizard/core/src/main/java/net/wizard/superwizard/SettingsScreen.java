@@ -2,6 +2,7 @@ package net.wizard.superwizard;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,9 +20,14 @@ public class SettingsScreen extends ScreenAdapter {
     Rectangle easy, normal, difficult, goback;
     
     int difficulty = 2;
+    
+    boolean sound;
+    
+    Sound clickSound;
 
-    public SettingsScreen(final Juego game) {
+    public SettingsScreen(final Juego game, boolean sound) {
         this.game = game;
+        this.sound = sound;
 
         camera = new OrthographicCamera(800, 480);
         camera.position.set(800 / 2, 480 / 2, 0);
@@ -30,6 +36,8 @@ public class SettingsScreen extends ScreenAdapter {
         menu = new Texture(Gdx.files.internal("difficulty.png"));
         back = new Texture(Gdx.files.internal("back.png"));
         difficulties = new Texture(Gdx.files.internal("difficulties.png"));
+        
+        clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
         
         easy = new Rectangle(339, 283 - 110 / 2, 125, 17);
         normal = new Rectangle(312, 246 - 110 / 2, 180, 18);
@@ -42,27 +50,31 @@ public class SettingsScreen extends ScreenAdapter {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
 
             if (easy.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    difficulty = 1;
-                    JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad fácil");
-                    return;
+                if(sound)
+                    clickSound.play();
+                difficulty = 1;
+                JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad fácil");
+                return;
             }
             if (normal.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    difficulty = 2;
-                    JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad normal");
-                    return;
+                if(sound)
+                    clickSound.play();
+                difficulty = 2;
+                JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad normal");
+                return;
             }
             if (difficult.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    difficulty = 3;
-                    JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad difícil");
-                    return;
+                if(sound)
+                    clickSound.play();
+                difficulty = 3;
+                JOptionPane.showMessageDialog(null, "Se ha establecido la dificultad difícil");
+                return;
             }
             if (goback.contains(touchPoint.x, touchPoint.y)) {
-                    //Assets.playSound(Assets.clickSound);
-                    game.setScreen(new MainScreen(game, difficulty));
-                    return;
+                if(sound)
+                    clickSound.play();
+                game.setScreen(new MainScreen(game, difficulty, sound));
+                return;
             }
         }
     }
@@ -89,8 +101,8 @@ public class SettingsScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
-            update();
-            draw();
+        update();
+        draw();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package net.wizard.superwizard;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.maps.tiled.*;
@@ -21,11 +22,16 @@ public class Wizard extends Image {
     final float GRAVITY = -2.5f;
     final float MAX_VELOCITY = 10f;
     final float DAMPING = 0.87f;
+    
+    boolean sound;
+    
+    Sound jumpSound;
 
-    public Wizard() {
+    public Wizard(boolean sound) {
         final float width = 60;
         final float height = 90;
         this.setSize(1, height / width);
+        this.sound = sound;
 
         Texture wizardTexture = new Texture("wizard.png");
         TextureRegion[][] grid = TextureRegion.split(wizardTexture, (int) width, (int) height);
@@ -34,10 +40,16 @@ public class Wizard extends Image {
         jump = grid[2][3];
         walk = new Animation(0.15f, grid[2][7], grid[2][6], grid[2][5], grid[2][4], grid[2][3], grid[2][2], grid[2][1], grid[2][0]);
         walk.setPlayMode(Animation.PlayMode.LOOP_PINGPONG);
+        
+        jumpSound = Gdx.audio.newSound(Gdx.files.internal("jump.wav"));
     }
     
     public Rectangle rectangulo() {
         return new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+    }
+    
+    public void setSound(boolean sound) {
+        this.sound = sound;
     }
 
     @Override
@@ -46,6 +58,8 @@ public class Wizard extends Image {
         
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             if (canJump) {
+                if(sound)
+                    jumpSound.play();
                 yVelocity = yVelocity + MAX_VELOCITY * 4;
             }
             canJump = false;
