@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3;
 
 public class MainScreen extends ScreenAdapter {
     final Juego game;
-    Texture fondo, menu;
+    Texture fondo, menu, title;
 
     OrthographicCamera camera;
     Vector3 touchPoint;
@@ -34,6 +34,7 @@ public class MainScreen extends ScreenAdapter {
         touchPoint = new Vector3();
         fondo = new Texture(Gdx.files.internal("background.png"));
         menu = new Texture(Gdx.files.internal("menu.png"));
+        title = new Texture(Gdx.files.internal("title.png"));
         
         clickSound = Gdx.audio.newSound(Gdx.files.internal("click.wav"));
         
@@ -82,6 +83,7 @@ public class MainScreen extends ScreenAdapter {
         game.batch.enableBlending();
         game.batch.begin();
         game.batch.draw(menu, 250, 200 - 110 / 2, 300, 110);
+        game.batch.draw(title, 300, 350 - 110 / 2, 200, 40);
         game.batch.end();
     }
 

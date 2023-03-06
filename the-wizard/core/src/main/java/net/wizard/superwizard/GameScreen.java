@@ -22,7 +22,6 @@ public class GameScreen extends ScreenAdapter {
     OrthographicCamera camera;
     
     Wizard wizard;
-    Fire fire;
     Skull skull;
     Live live;
     Reload reload;
@@ -30,6 +29,7 @@ public class GameScreen extends ScreenAdapter {
     ArrayList<Coin> coins = new ArrayList();
     ArrayList<Bird> birds = new ArrayList();
     ArrayList<Mushroom> mushrooms = new ArrayList();
+    ArrayList<Fire> fires = new ArrayList();
     
     int score = 0, numMushrooms = 0, numBirds = 0, numCoins = 0, numEnemies = 0, numAleatorio = 0, lives = 0, numFires = 0, difficulty;
     float time = 0, timeInmortal = 7;
@@ -229,14 +229,16 @@ public class GameScreen extends ScreenAdapter {
                 } else 
                     wizard.setPosition(10, 10);
             }
-            if(fire != null) {
-                if(fire.rectangulo().overlaps(enemy.rectangulo()) && !fire.enemyOverlaps) {
-                    if(sound)
-                        hitSound.play();
-                    enemy.fireOverlaps = true;
-                    fire.enemyOverlaps = true;
-                    fire.remove();
-                    enemy.remove();
+            if(!fires.isEmpty()) {
+                for(Fire fire: fires) {
+                    if(fire.rectangulo().overlaps(enemy.rectangulo()) && !fire.enemyOverlaps) {
+                        if(sound)
+                            hitSound.play();
+                        enemy.fireOverlaps = true;
+                        fire.enemyOverlaps = true;
+                        fire.remove();
+                        enemy.remove();
+                    }
                 }
             }
         }
@@ -261,14 +263,16 @@ public class GameScreen extends ScreenAdapter {
                 } else 
                     wizard.setPosition(10, 10);
             }
-            if(fire != null) {
-                if(fire.rectangulo().overlaps(bird.rectangulo()) && !fire.enemyOverlaps) {
-                    if(sound)
-                        hitSound.play();
-                    bird.fireOverlaps = true;
-                    fire.enemyOverlaps = true;
-                    fire.remove();
-                    bird.remove();
+            if(!fires.isEmpty()) {
+                for(Fire fire: fires) {
+                    if(fire.rectangulo().overlaps(bird.rectangulo()) && !fire.enemyOverlaps) {
+                        if(sound)
+                            hitSound.play();
+                        bird.fireOverlaps = true;
+                        fire.enemyOverlaps = true;
+                        fire.remove();
+                        bird.remove();
+                    }
                 }
             }
         }
@@ -283,14 +287,16 @@ public class GameScreen extends ScreenAdapter {
                 } else 
                     wizard.setPosition(10, 10);
             }
-            if(fire != null) {
-                if(fire.rectangulo().overlaps(mushroom.rectangulo()) && !fire.enemyOverlaps) {
-                    if(sound)
-                        hitSound.play();
-                    mushroom.fireOverlaps = true;
-                    fire.enemyOverlaps = true;
-                    fire.remove();
-                    mushroom.remove();
+            if(!fires.isEmpty()) {
+                for(Fire fire: fires) {
+                    if(fire.rectangulo().overlaps(mushroom.rectangulo()) && !fire.enemyOverlaps) {
+                        if(sound)
+                            hitSound.play();
+                        mushroom.fireOverlaps = true;
+                        fire.enemyOverlaps = true;
+                        fire.remove();
+                        mushroom.remove();
+                    }
                 }
             }
         }
@@ -307,10 +313,11 @@ public class GameScreen extends ScreenAdapter {
             camera.unproject(touchPoint.set(Gdx.input.getX(), Gdx.input.getY(), 0));
             
             if (time >= TIMETOSHOOT && numFires > 0) {
-                fire = new Fire(wizard.leftTouched(), wizard.rightTouched());
+                Fire fire = new Fire(wizard.leftTouched(), wizard.rightTouched());
                 fire.layer = (TiledMapTileLayer) map.getLayers().get("walls");
                 fire.setPosition(wizard.getX(), wizard.getY());
                 stage.addActor(fire);
+                fires.add(fire);
                 time = 0;
                 numFires--;
             }
